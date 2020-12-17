@@ -48,7 +48,7 @@ func init_collection(collection_name string) *mongo.Collection {
 }
 func init() {
 	candidates_collection = init_collection("Candidates")
-	assignees_collection = init_collection("hurra")
+	assignees_collection = init_collection("Assignees")
 }
 func main() {
 	ReadCandidate("5b758c6151d9590001def630")
