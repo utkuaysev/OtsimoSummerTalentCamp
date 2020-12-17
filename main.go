@@ -35,7 +35,8 @@ func main() {
 	*/
 	//	CompleteMeeting("5b75881051d9590001def62a")
 	//DenyCandidate("5c4ab2429b4d8d000145d833")
-	err = AcceptCandidate("5b7583e251d9590001def621")
+	//err = AcceptCandidate("5b7583e251d9590001def621")
+	//fmt.Println(FindAssigneeIDByName("Sercan"))
 	log.Fatal(err)
 	defer end()
 	defer f.Close()
@@ -131,4 +132,12 @@ func AcceptCandidate(_id string) error {
 		return err
 	}
 	return fmt.Errorf("There is an obstacle for accept user with id:  %s", _id)
+}
+func FindAssigneeIDByName(name string) string {
+	doc := assignees_collection.FindOne(context.TODO(), bson.M{"name": name})
+	// decode user model.
+	var assignee Assignee
+	doc.Decode(&assignee)
+	return assignee.ID
+
 }

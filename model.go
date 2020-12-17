@@ -1,11 +1,13 @@
 package main
 
-import "time"
+import (
+	"time"
+)
 
 type Assignee struct {
-	Name       string //First name of the candidate.
-	Department string //Department that candidate applied.
-
+	ID         string `bson:"_id"`
+	Name       string `bson:"name"`
+	Department string `bson:"department"`
 }
 
 type Candidate struct {
