@@ -34,6 +34,7 @@ func main() {
 		ArrangeMeeting("5b75820a51d9590001def61e", time_check_pointer)
 	*/
 	//	CompleteMeeting("5b75881051d9590001def62a")
+	DenyCandidate("5c4ab2429b4d8d000145d833")
 	defer end()
 	defer f.Close()
 }
@@ -100,4 +101,18 @@ func CompleteMeeting(_id string) error {
 	}
 	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
 	return err
+}
+func DenyCandidate(_id string) error {
+	filter := bson.D{{"_id", _id}}
+	update := bson.D{
+		{"$set", bson.D{{"status", "Denied"}}},
+		{"$set", bson.D{{"next_meeting", nil}}},
+	}
+	updateResult, err := candidates_collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
+	return err
+
 }
