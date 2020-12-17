@@ -39,8 +39,9 @@ func main() {
 	*/
 	//err = CompleteMeeting("5b75820a51d9590001def61e")
 	//DenyCandidate("5c4ab2429b4d8d000145d833")
-	err = AcceptCandidate("5b75820a51d9590001def61e")
+	//err = AcceptCandidate("5b75820a51d9590001def61e")
 	//fmt.Println(FindAssigneeIDByName("Sercan"))
+	FindAssigneesCandidates("5bb6360e55c98300013a087b")
 	log.Fatal(err)
 	defer end()
 	defer f.Close()
@@ -163,5 +164,32 @@ func FindAssigneeIDByName(name string) string {
 	var assignee Assignee
 	doc.Decode(&assignee)
 	return assignee.ID
+}
+func FindAssigneesCandidates(id string) ([]Candidate, error) {
+	var results []Candidate
 
+	// Passing bson.D{{}} as the filter matches all documents in the collection
+	cur, err := candidates_collection.Find(context.TODO(), bson.D{{"assignee", id}})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Finding multiple documents returns a cursor
+	// Iterating through the cursor allows us to decode documents one at a time
+	for cur.Next(context.TODO()) {
+
+		// create a value into which the single document can be decoded
+		var elem Candidate
+		err := cur.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		results = append(results, elem)
+	}
+
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return results, nil
 }
