@@ -34,36 +34,13 @@ func main() {
 		ArrangeMeeting("5b75820a51d9590001def61e", time_check_pointer)
 	*/
 	//	CompleteMeeting("5b75881051d9590001def62a")
-	DenyCandidate("5c4ab2429b4d8d000145d833")
+	//DenyCandidate("5c4ab2429b4d8d000145d833")
+	err = AcceptCandidate("5b7583e251d9590001def621")
+	log.Fatal(err)
 	defer end()
 	defer f.Close()
 }
 
-func ReadCandidate(_id string) (Candidate, error) {
-	filter := bson.M{"_id": _id}
-	var result Candidate
-	err = candidates_collection.FindOne(context.TODO(), filter).Decode(&result)
-	if err != nil {
-		log.Println(err)
-	}
-	return result, err
-}
-func CreateCandidate(candidate Candidate) (Candidate, error) {
-	insertResult, err := candidates_collection.InsertOne(context.TODO(), candidate)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("Inserted a single document: ", insertResult.InsertedID)
-	return candidate, err
-}
-func DeleteCandidate(_id string) error {
-	_, err := candidates_collection.DeleteOne(context.TODO(), bson.M{"_id": _id})
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("Deleted with id %v documents in the trainers collection\n", _id)
-	return err
-}
 func is_next_meeting_null(_id string) bool {
 	candidate, err := ReadCandidate(_id)
 	if err != nil {
@@ -71,11 +48,32 @@ func is_next_meeting_null(_id string) bool {
 	}
 	return !candidate.Next_meeting.IsZero()
 }
+
+func ReadCandidate(_id string) (Candidate, error) {
+	filter := bson.M{"_id": _id}
+	var result Candidate
+	err = candidates_collection.FindOne(context.TODO(), filter).Decode(&result)
+	return result, err
+}
+func CreateCandidate(candidate Candidate) (Candidate, error) {
+	insertResult, err := candidates_collection.InsertOne(context.TODO(), candidate)
+	if err != nil {
+		return candidate, err
+	}
+	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
+	return candidate, err
+}
+func DeleteCandidate(_id string) error {
+	_, err := candidates_collection.DeleteOne(context.TODO(), bson.M{"_id": _id})
+	if err != nil {
+		return err
+	}
+	fmt.Println("Deleted with id %v documents in the trainers collection\n", _id)
+	return err
+}
 func ArrangeMeeting(_id string, nextMeetingTime *time.Time) error {
 	if !is_next_meeting_null(_id) {
-		err1 := fmt.Errorf("There is a meeting has not completed for id %s.You can not arrange new meeting", _id)
-		log.Println(err1)
-		return err1
+		return fmt.Errorf("There is a meeting has not completed for id %s.You can not arrange new meeting", _id)
 	}
 	filter := bson.D{{"_id", _id}}
 
@@ -114,5 +112,23 @@ func DenyCandidate(_id string) error {
 	}
 	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
 	return err
-
+}
+func AcceptCandidate(_id string) error {
+	candidate, err := ReadCandidate(_id)
+	if err != nil {
+		return err
+	}
+	if candidate.Next_meeting.IsZero() && candidate.Meeting_count == 4 {
+		filter := bson.D{{"_id", _id}}
+		update := bson.D{
+			{"$set", bson.D{{"status", "Accepted"}}},
+		}
+		_, err := candidates_collection.UpdateOne(context.TODO(), filter, update)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("User with id %s is accepted\n", _id)
+		return err
+	}
+	return fmt.Errorf("There is an obstacle for accept user with id:  %s", _id)
 }
