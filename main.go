@@ -30,23 +30,23 @@ func init() {
 	log.SetOutput(f)
 	ceo_id = FindAssigneeIDByName(ceo_name)
 }
-func main() {
-	//ReadCandidate("5b758c6151d9590001def630")
 
-	/*		var time_check = (time.Now())
-			var time_check_pointer = &time_check
-			ArrangeMeeting("5b75820a51d9590001def61e", time_check_pointer)
-	*/
-	//err = CompleteMeeting("5b75820a51d9590001def61e")
-	//DenyCandidate("5c4ab2429b4d8d000145d833")
-	//err = AcceptCandidate("5b75820a51d9590001def61e")
-	//fmt.Println(FindAssigneeIDByName("Sercan"))
-	//	FindAssigneesCandidates("5bb6360e55c98300013a087b")
-	//log.Fatal(err)
-
-	defer end()
-	defer f.Close()
-}
+//func main() {
+////	ReadCandidate("5b758c6151d9590001def630")
+//
+//	/*		var time_check = (time.Now())
+//			var time_check_pointer = &time_check
+//			ArrangeMeeting("5b75820a51d9590001def61e", time_check_pointer)
+//	*/
+//	//err = CompleteMeeting("5b75820a51d9590001def61e")
+//	//DenyCandidate("5c4ab2429b4d8d000145d833")
+//	//err = AcceptCandidate("5b75820a51d9590001def61e")
+//	//fmt.Println(FindAssigneeIDByName("Sercan"))
+//	//	FindAssigneesCandidates("5bb6360e55c98300013a087b")
+//	//log.Fatal(err)
+//	defer end()
+//	defer f.Close()
+//}
 
 func ReadCandidate(_id string) (Candidate, error) {
 	filter := bson.M{"_id": _id}
@@ -62,7 +62,14 @@ func ReadAssignee(_id string) (Assignee, error) {
 }
 func CreateCandidate(candidate Candidate) (Candidate, error) {
 	if candidate.is_true_mail_format() {
-		return candidate, fmt.Errorf("Mail format is inappropriate for adding db. %s can not added", candidate.get_name())
+		return candidate, fmt.Errorf("Mail format is inappropriate for adding db. %s did not added", candidate.get_name())
+	}
+	assignee, err := ReadAssignee(candidate.Assignee)
+	if candidate.Department != assignee.Department {
+		return candidate, fmt.Errorf("Candidate's  and his/her Assignee's department should be same.%s did not added because his assignee is %s", candidate.get_name(), assignee.Name)
+	}
+	if err != nil {
+		return candidate, err
 	}
 	insertResult, err := candidates_collection.InsertOne(context.TODO(), candidate)
 	if err != nil {
