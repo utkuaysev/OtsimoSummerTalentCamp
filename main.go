@@ -5,6 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
+	"os"
 	"time"
 )
 
@@ -42,6 +43,8 @@ type Candidate struct {
 
 var candidates_collection *mongo.Collection
 var assignees_collection *mongo.Collection
+var f *os.File
+var open_file_err error
 
 func init_collection(collection_name string) *mongo.Collection {
 	return client.Database("Otsimo").Collection(collection_name)
@@ -49,10 +52,16 @@ func init_collection(collection_name string) *mongo.Collection {
 func init() {
 	candidates_collection = init_collection("Candidates")
 	assignees_collection = init_collection("Assignees")
+	f, open_file_err = os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	log.SetOutput(f)
 }
 func main() {
 	ReadCandidate("5b758c6151d9590001def630")
 	defer end()
+	defer f.Close()
 }
 
 func ReadCandidate(_id string) (Candidate, error) {
@@ -60,7 +69,15 @@ func ReadCandidate(_id string) (Candidate, error) {
 	var result Candidate
 	err = candidates_collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return result, err
+}
+func CreateCandidate(candidate Candidate) (Candidate, error) {
+	insertResult, err := candidates_collection.InsertOne(context.TODO(), candidate)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Inserted a single document: ", insertResult.InsertedID)
+	return candidate, err
 }
