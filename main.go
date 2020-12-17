@@ -2,44 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"os"
 	"time"
 )
-
-type Assignee struct {
-	Name       string //First name of the candidate.
-	Department string //Department that candidate applied.
-
-}
-
-type Candidate struct {
-	First_name string //First name of the candidate.
-	Last_name  string //Last name of the candidate.
-	Email      string //Contact mail of candidate.
-	Department string //Department that candidate applied.
-	/*
-		 Values are
-		-Marketing
-		-Design
-		-Development
-	*/
-	University string //University of the candidate.
-	Experience bool   //Candidate has previous working experience or not.
-	Status     string //Status of the candidate.
-	/*
-		     Values are
-			-Pending
-			-In Progress
-			-Denied
-			-Accepted
-	*/
-	Meeting_count int       //The order of the next meeting. The maximum meeting count is 4.
-	Next_meeting  time.Time //Timestamp of the next meeting between the Otsimo team and the candidate.
-	Assignee      string    //The id of the Otsimo team member who is responsible for this candidate.
-}
 
 var candidates_collection *mongo.Collection
 var assignees_collection *mongo.Collection
@@ -59,7 +28,10 @@ func init() {
 	log.SetOutput(f)
 }
 func main() {
-	ReadCandidate("5b758c6151d9590001def630")
+	//ReadCandidate("5b758c6151d9590001def630")
+	var asd = (time.Now())
+	var asd2 = &asd
+	ArrangeMeeting("5b75820a51d9590001def61e", asd2)
 	defer end()
 	defer f.Close()
 }
@@ -87,5 +59,30 @@ func DeleteCandidate(_id string) error {
 		log.Fatal(err)
 	}
 	log.Println("Deleted with id %v documents in the trainers collection\n", _id)
+	return err
+}
+func ArrangeMeeting(_id string, nextMeetingTime *time.Time) error {
+	candidate, err := ReadCandidate(_id)
+	if err != nil {
+		return err
+	}
+	if !candidate.Next_meeting.IsZero() {
+		err1 := fmt.Errorf("There is a meeting has not completed for id %s.You can not arrange new meeting", _id)
+		log.Println(err1)
+		return err1
+	}
+	filter := bson.D{{"_id", _id}}
+
+	update := bson.D{
+		{"$inc", bson.D{
+			{"meeting_count", 1},
+		}}, {"$set", bson.D{{"next_meeting", nextMeetingTime}}},
+	}
+	updateResult, err := candidates_collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
 	return err
 }
