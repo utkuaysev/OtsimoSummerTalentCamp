@@ -41,8 +41,9 @@ func main() {
 	//DenyCandidate("5c4ab2429b4d8d000145d833")
 	//err = AcceptCandidate("5b75820a51d9590001def61e")
 	//fmt.Println(FindAssigneeIDByName("Sercan"))
-	FindAssigneesCandidates("5bb6360e55c98300013a087b")
-	log.Fatal(err)
+	//	FindAssigneesCandidates("5bb6360e55c98300013a087b")
+	//log.Fatal(err)
+
 	defer end()
 	defer f.Close()
 }
@@ -60,6 +61,9 @@ func ReadAssignee(_id string) (Assignee, error) {
 	return result, err
 }
 func CreateCandidate(candidate Candidate) (Candidate, error) {
+	if candidate.is_true_mail_format() {
+		return candidate, fmt.Errorf("Mail format is inappropriate for adding db. %s can not added", candidate.get_name())
+	}
 	insertResult, err := candidates_collection.InsertOne(context.TODO(), candidate)
 	if err != nil {
 		return candidate, err

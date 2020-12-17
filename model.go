@@ -1,6 +1,7 @@
 package main
 
 import (
+	"regexp"
 	"time"
 )
 
@@ -49,4 +50,7 @@ func (candidate Candidate) is_last_meeting_arranging() bool {
 
 func (candidate Candidate) get_name() string {
 	return candidate.First_name + " " + candidate.Last_name
+}
+func (candidate Candidate) is_true_mail_format() bool {
+	return (regexp.MustCompile(`.+@.+\..+`).MatchString(candidate.Email))
 }
