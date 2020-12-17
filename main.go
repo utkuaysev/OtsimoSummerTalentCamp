@@ -81,3 +81,11 @@ func CreateCandidate(candidate Candidate) (Candidate, error) {
 	log.Println("Inserted a single document: ", insertResult.InsertedID)
 	return candidate, err
 }
+func DeleteCandidate(_id string) error {
+	_, err := candidates_collection.DeleteOne(context.TODO(), bson.M{"_id": _id})
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Deleted with id %v documents in the trainers collection\n", _id)
+	return err
+}
