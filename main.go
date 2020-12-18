@@ -119,7 +119,7 @@ func ArrangeMeeting(_id string, nextMeetingTime *time.Time) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Meeting %d arranged for %s with %s", candidate.Meeting_count+1, candidate.get_name(), assignee_name)
+	fmt.Printf("Meeting %d arranged for %s with %s\n", candidate.Meeting_count+1, candidate.get_name(), assignee_name)
 	return err
 }
 
