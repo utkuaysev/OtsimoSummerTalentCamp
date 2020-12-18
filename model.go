@@ -12,6 +12,7 @@ type Assignee struct {
 }
 
 type Candidate struct {
+	ID         string `bson:"_id" json:"_id,omitempty"`
 	First_name string `schema:"first_name"` //First name of the candidate.
 	Last_name  string `schema:"last_name"`  //Last name of the candidate.
 	Email      string `schema:"mail"`       //Contact mail of candidate.
