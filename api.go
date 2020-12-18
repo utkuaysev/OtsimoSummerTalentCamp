@@ -108,18 +108,31 @@ func ApiArrangeMeeting(w http.ResponseWriter, r *http.Request) {
 	log.Println(err)
 	fmt.Fprintf(w, "Meeting arranged for id %s", id)
 }
+func ApiCompleteMeeting(w http.ResponseWriter, r *http.Request) {
+	check, id := get_id_from_query(w, r)
+	if !check {
+		return
+	}
+	err := CompleteMeeting(id)
+	if err != nil {
+		log.Println(err)
+		fmt.Fprintf(w, "%s", err.Error())
+		return
+	}
+	fmt.Fprintf(w, "Meeting is completed for id:%s", id)
+}
 func handleRequests() {
 	http.HandleFunc("/createCandidate", ApiCreateCandidate)
 	http.HandleFunc("/readCandidate", ApiReadCandidate)
 	http.HandleFunc("/deleteCandidate", ApiDeleteCandidate)
 	http.HandleFunc("/arrangeMeeting", ApiArrangeMeeting)
+	http.HandleFunc("/completeMeeting", ApiCompleteMeeting)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 /*
 
 
- ArrangeMeeting (_id string, nextMeetingTime *time.Time) error
 
 
  CompleteMeeting (_id string) error
