@@ -88,7 +88,6 @@ func DeleteCandidate(_id string) error {
 }
 func ArrangeMeeting(_id string, nextMeetingTime *time.Time) error {
 	candidate, err := ReadCandidate(_id)
-
 	if err != nil {
 		return err
 	}
@@ -101,6 +100,9 @@ func ArrangeMeeting(_id string, nextMeetingTime *time.Time) error {
 		return fmt.Errorf("Maximum number of meeting is reached for id %s", _id)
 	}
 	var setElements bson.D
+	if candidate.Status == "Pending" {
+		setElements = append(setElements, bson.E{"status", "In Progress"})
+	}
 	if candidate.is_last_meeting_arranging() {
 		setElements = append(setElements, bson.E{"assignee", ceo_id})
 		assignee_name = ceo_name
