@@ -121,12 +121,40 @@ func ApiCompleteMeeting(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "Meeting is completed for id:%s", id)
 }
+func ApiDenyCandidate(w http.ResponseWriter, r *http.Request) {
+	check, id := get_id_from_query(w, r)
+	if !check {
+		return
+	}
+	err := DenyCandidate(id)
+	if err != nil {
+		log.Println(err)
+		fmt.Fprintf(w, "%s", err.Error())
+		return
+	}
+	fmt.Fprintf(w, "Candidate is denied with id:%s", id)
+}
+func ApiAcceptCandidate(w http.ResponseWriter, r *http.Request) {
+	check, id := get_id_from_query(w, r)
+	if !check {
+		return
+	}
+	err := AcceptCandidate(id)
+	if err != nil {
+		log.Println(err)
+		fmt.Fprintf(w, "%s", err.Error())
+		return
+	}
+	fmt.Fprintf(w, "Candidate is accepted with id:%s", id)
+}
 func handleRequests() {
 	http.HandleFunc("/createCandidate", ApiCreateCandidate)
 	http.HandleFunc("/readCandidate", ApiReadCandidate)
 	http.HandleFunc("/deleteCandidate", ApiDeleteCandidate)
 	http.HandleFunc("/arrangeMeeting", ApiArrangeMeeting)
 	http.HandleFunc("/completeMeeting", ApiCompleteMeeting)
+	http.HandleFunc("/denyCandidate", ApiDenyCandidate)
+	http.HandleFunc("/acceptCandidate", ApiAcceptCandidate)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -134,14 +162,11 @@ func handleRequests() {
 
 
 
-
- CompleteMeeting (_id string) error
-
-
  DenyCandidate (_id string) error
 
-
  AcceptCandidate(_id string) error
+
+FindAssigneesCandidates (id string) ([]Candidate, error)
 
 */
 func main() {

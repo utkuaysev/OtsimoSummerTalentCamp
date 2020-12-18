@@ -155,7 +155,7 @@ func DenyCandidate(_id string) error {
 		return err
 	}
 	candidate, _ := ReadCandidate(_id)
-	fmt.Printf("User with name %s is denied", candidate.get_name())
+	fmt.Printf("User with name %s is denied\n", candidate.get_name())
 	return err
 }
 func AcceptCandidate(_id string) error {
@@ -163,19 +163,21 @@ func AcceptCandidate(_id string) error {
 	if err != nil {
 		return err
 	}
-	if candidate.Next_meeting.IsZero() && candidate.Meeting_count == 4 {
-		filter := bson.D{{"_id", _id}}
-		update := bson.D{
-			{"$set", bson.D{{"status", "Accepted"}}},
-		}
-		_, err := candidates_collection.UpdateOne(context.TODO(), filter, update)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("User with name %s is accepted\n", candidate.get_name())
+	if candidate.Meeting_count < 4 {
+		return fmt.Errorf("Candidates should complete 4 meetings to be accepted.%s completed %d number of meetings", candidate.get_name(), candidate.Meeting_count)
+	}
+	if !candidate.Next_meeting.IsZero() {
+		return fmt.Errorf("There is an meeting for %s not completed.Acceptance cancelled", candidate.get_name())
+	}
+	filter := bson.D{{"_id", _id}}
+	update := bson.D{
+		{"$set", bson.D{{"status", "Accepted"}}}}
+	_, err = candidates_collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
 		return err
 	}
-	return fmt.Errorf("There is an obstacle for accept user with id:  %s", _id)
+	fmt.Printf("User with name %s is accepted\n\n", candidate.get_name())
+	return err
 }
 func FindAssigneeIDByName(name string) string {
 	doc := assignees_collection.FindOne(context.TODO(), bson.M{"name": name})
