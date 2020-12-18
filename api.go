@@ -147,6 +147,44 @@ func ApiAcceptCandidate(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "Candidate is accepted with id:%s", id)
 }
+func ApiFindAssigneeIDByName(w http.ResponseWriter, r *http.Request) {
+	names, ok := r.URL.Query()["name"]
+
+	if !ok || len(names[0]) < 1 {
+		log.Println("Url Param 'name' is missing")
+		fmt.Fprintf(w, "Url Param 'name' is missing")
+		return
+	}
+
+	// Query()["id"] will return an array of items,
+	// we only want the single item.
+	name := names[0]
+
+	id := FindAssigneeIDByName(name)
+	if id == "" {
+		log.Println("Assignee not found with name %s ", name)
+		fmt.Fprintf(w, "Assignee not found with name %s ", name)
+		return
+	}
+	fmt.Fprintf(w, "Candidate id is %s for name:%s", id, name)
+
+}
+
+func ApiFindAssigneesCandidates(writer http.ResponseWriter, request *http.Request) {
+	check, id := get_id_from_query(writer, request)
+	if !check {
+		return
+	}
+	results, err := FindAssigneesCandidates(id)
+	if err != nil {
+		log.Println(err)
+		fmt.Fprintf(writer, "%s", err.Error())
+		return
+	}
+	fmt.Fprintf(writer, "Candidates are: %v for assignee %s", results, id)
+
+}
+
 func handleRequests() {
 	http.HandleFunc("/createCandidate", ApiCreateCandidate)
 	http.HandleFunc("/readCandidate", ApiReadCandidate)
@@ -155,20 +193,12 @@ func handleRequests() {
 	http.HandleFunc("/completeMeeting", ApiCompleteMeeting)
 	http.HandleFunc("/denyCandidate", ApiDenyCandidate)
 	http.HandleFunc("/acceptCandidate", ApiAcceptCandidate)
+	http.HandleFunc("/findAssigneeIDByName", ApiFindAssigneeIDByName)
+	http.HandleFunc("/findAssigneesCandidates", ApiFindAssigneesCandidates)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
-
-/*
-
-
-
- DenyCandidate (_id string) error
-
- AcceptCandidate(_id string) error
-
-FindAssigneesCandidates (id string) ([]Candidate, error)
-
-*/
 func main() {
 	handleRequests()
+	defer end()
+	defer f.Close()
 }

@@ -29,24 +29,8 @@ func init() {
 	}
 	log.SetOutput(f)
 	ceo_id = FindAssigneeIDByName(ceo_name)
-}
 
-//func main() {
-////	ReadCandidate("5b758c6151d9590001def630")
-//
-//	/*		var time_check = (time.Now())
-//			var time_check_pointer = &time_check
-//			ArrangeMeeting("5b75820a51d9590001def61e", time_check_pointer)
-//	*/
-//	//err = CompleteMeeting("5b75820a51d9590001def61e")
-//	//DenyCandidate("5c4ab2429b4d8d000145d833")
-//	//err = AcceptCandidate("5b75820a51d9590001def61e")
-//	//fmt.Println(FindAssigneeIDByName("Sercan"))
-//	//	FindAssigneesCandidates("5bb6360e55c98300013a087b")
-//	//log.Fatal(err)
-//	defer end()
-//	defer f.Close()
-//}
+}
 
 func ReadCandidate(_id string) (Candidate, error) {
 	filter := bson.M{"_id": _id}
@@ -103,9 +87,7 @@ func ArrangeMeeting(_id string, nextMeetingTime *time.Time) error {
 		return fmt.Errorf("Maximum number of meeting is reached for id %s", _id)
 	}
 	var setElements bson.D
-	if candidate.Status == "Pending" {
-		setElements = append(setElements, bson.E{"status", "In Progress"})
-	}
+	setElements = append(setElements, bson.E{"status", "In Progress"})
 	if candidate.is_last_meeting_arranging() {
 		setElements = append(setElements, bson.E{"assignee", ceo_id})
 		assignee_name = ceo_name
@@ -188,11 +170,10 @@ func FindAssigneeIDByName(name string) string {
 }
 func FindAssigneesCandidates(id string) ([]Candidate, error) {
 	var results []Candidate
-
 	// Passing bson.D{{}} as the filter matches all documents in the collection
 	cur, err := candidates_collection.Find(context.TODO(), bson.D{{"assignee", id}})
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// Finding multiple documents returns a cursor
@@ -203,14 +184,12 @@ func FindAssigneesCandidates(id string) ([]Candidate, error) {
 		var elem Candidate
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
-
 		results = append(results, elem)
 	}
-
 	if err := cur.Err(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	return results, nil
 }
