@@ -125,6 +125,9 @@ func CompleteMeeting(_id string) error {
 	candidate, _ := ReadCandidate(_id)
 	filter := bson.D{{"_id", _id}}
 	var setElements bson.D
+	if candidate.is_next_meeting_null() {
+		return fmt.Errorf("There is no meeting to complete")
+	}
 	if candidate.is_max_number_of_meeting_reached() {
 		setElements = append(setElements, bson.E{"status", "Pending"})
 	}
