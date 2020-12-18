@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/schema"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 	"time"
@@ -40,6 +41,7 @@ func ApiCreateCandidate(w http.ResponseWriter, r *http.Request) {
 	}
 	candidate.Status = "Pending"
 	candidate.Application_date = time.Now()
+	candidate.ID = primitive.NewObjectID().Hex()
 	_, err := CreateCandidate(*candidate)
 	if err != nil {
 		fmt.Fprintf(w, err.Error())
@@ -56,15 +58,46 @@ func ApiReadCandidate(w http.ResponseWriter, r *http.Request) {
 	candidate, err := ReadCandidate(id)
 	if err != nil {
 		log.Println(err)
+		fmt.Fprintf(w, "%s", err.Error())
+		return
 	}
 	fmt.Fprintf(w, "%v", candidate)
+}
+func ApiDeleteCandidate(w http.ResponseWriter, r *http.Request) {
+	check, id := get_id_from_query(w, r)
+	if !check {
+		return
+	}
+	err := DeleteCandidate(id)
+	if err != nil {
+		log.Println(err)
+		fmt.Fprintf(w, "%s", err.Error())
+		return
+	}
+	fmt.Fprintf(w, "Candidate with id %s is deleted", id)
 }
 func handleRequests() {
 	http.HandleFunc("/createCandidate", ApiCreateCandidate)
 	http.HandleFunc("/readCandidate", ApiReadCandidate)
+	http.HandleFunc("/deleteCandidate", ApiDeleteCandidate)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
+/*
+
+
+ ArrangeMeeting (_id string, nextMeetingTime *time.Time) error
+
+
+ CompleteMeeting (_id string) error
+
+
+ DenyCandidate (_id string) error
+
+
+ AcceptCandidate(_id string) error
+
+*/
 func main() {
 	handleRequests()
 }
