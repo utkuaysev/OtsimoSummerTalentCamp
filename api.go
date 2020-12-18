@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -76,10 +77,42 @@ func ApiDeleteCandidate(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "Candidate with id %s is deleted", id)
 }
+func ApiArrangeMeeting(w http.ResponseWriter, r *http.Request) {
+	check, id := get_id_from_query(w, r)
+	if !check {
+		return
+	}
+	meeting_time, ok := r.URL.Query()["next_meeting_time"]
+
+	if !ok || len(meeting_time[0]) < 1 {
+		log.Println("Url Param 'next_meeting_time' is missing")
+		fmt.Fprintf(w, "Url Param 'next_meeting_time' is missing")
+		return
+	}
+
+	meeting_time_str := meeting_time[0]
+	meeting_time_str = strings.Replace(meeting_time_str, " ", "+", 1)
+	layout := "2006-01-02T15:04:05Z07:00"
+	t, err := time.Parse(layout, meeting_time_str)
+	if err != nil {
+		log.Println(err)
+		fmt.Fprintf(w, err.Error())
+		return
+	}
+	err = ArrangeMeeting(id, &t)
+	if err != nil {
+		log.Println(err)
+		fmt.Fprintf(w, "%s", err.Error())
+		return
+	}
+	log.Println(err)
+	fmt.Fprintf(w, "Meeting arranged for id %s", id)
+}
 func handleRequests() {
 	http.HandleFunc("/createCandidate", ApiCreateCandidate)
 	http.HandleFunc("/readCandidate", ApiReadCandidate)
 	http.HandleFunc("/deleteCandidate", ApiDeleteCandidate)
+	http.HandleFunc("/arrangeMeeting", ApiArrangeMeeting)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
