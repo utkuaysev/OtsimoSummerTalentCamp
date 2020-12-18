@@ -61,15 +61,15 @@ func ReadAssignee(_id string) (Assignee, error) {
 	return result, err
 }
 func CreateCandidate(candidate Candidate) (Candidate, error) {
-	if candidate.is_true_mail_format() {
+	if !candidate.is_true_mail_format() {
 		return candidate, fmt.Errorf("Mail format is inappropriate for adding db. %s did not added", candidate.get_name())
 	}
 	assignee, err := ReadAssignee(candidate.Assignee)
-	if candidate.Department != assignee.Department {
-		return candidate, fmt.Errorf("Candidate's  and his/her Assignee's department should be same.%s did not added because his assignee is %s", candidate.get_name(), assignee.Name)
-	}
 	if err != nil {
 		return candidate, err
+	}
+	if candidate.Department != assignee.Department {
+		return candidate, fmt.Errorf("Candidate's  and his/her Assignee's department should be same.%s did not added because his department is: %s and assignee %s department is %s ", candidate.get_name(), candidate.Department, assignee.Name, assignee.Department)
 	}
 	insertResult, err := candidates_collection.InsertOne(context.TODO(), candidate)
 	if err != nil {
@@ -128,7 +128,7 @@ func CompleteMeeting(_id string) error {
 	if candidate.is_max_number_of_meeting_reached() {
 		setElements = append(setElements, bson.E{"status", "Pending"})
 	}
-	setElements = append(setElements, bson.E{"next_meeting", nil})
+	setElements = append(setElements, bson.E{"next_meeting", time.Time{}})
 
 	update := bson.D{{"$set", setElements}}
 	_, err := candidates_collection.UpdateOne(context.TODO(), filter, update)
@@ -142,7 +142,7 @@ func DenyCandidate(_id string) error {
 	filter := bson.D{{"_id", _id}}
 	update := bson.D{
 		{"$set", bson.D{{"status", "Denied"}}},
-		{"$set", bson.D{{"next_meeting", nil}}},
+		{"$set", bson.D{{"next_meeting", time.Time{}}}},
 	}
 	_, err := candidates_collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {

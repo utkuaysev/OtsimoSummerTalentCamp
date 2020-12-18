@@ -12,18 +12,18 @@ type Assignee struct {
 }
 
 type Candidate struct {
-	First_name string //First name of the candidate.
-	Last_name  string //Last name of the candidate.
-	Email      string //Contact mail of candidate.
-	Department string //Department that candidate applied.
+	First_name string `schema:"first_name"` //First name of the candidate.
+	Last_name  string `schema:"last_name"`  //Last name of the candidate.
+	Email      string `schema:"mail"`       //Contact mail of candidate.
+	Department string `schema:"department"` //Department that candidate applied.
 	/*
 		 Values are
 		-Marketing
 		-Design
 		-Development
 	*/
-	University string //University of the candidate.
-	Experience bool   //Candidate has previous working experience or not.
+	University string `schema:"university"` //University of the candidate.
+	Experience bool   `schema:"experience"` //Candidate has previous working experience or not.
 	Status     string //Status of the candidate.
 	/*
 		     Values are
@@ -34,8 +34,8 @@ type Candidate struct {
 	*/
 	Meeting_count    int       //The order of the next meeting. The maximum meeting count is 4.
 	Next_meeting     time.Time //Timestamp of the next meeting between the Otsimo team and the candidate.
-	Assignee         string    //The id of the Otsimo team member who is responsible for this candidate.
-	Application_date time.Time
+	Assignee         string    `schema:"assignee"` //The id of the Otsimo team member who is responsible for this candidate.
+	Application_date time.Time //The application date of candidate
 }
 
 func (candidate Candidate) is_next_meeting_null() bool {
