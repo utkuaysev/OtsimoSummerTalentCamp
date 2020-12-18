@@ -52,6 +52,9 @@ func ReadCandidate(_id string) (Candidate, error) {
 	filter := bson.M{"_id": _id}
 	var result Candidate
 	err = candidates_collection.FindOne(context.TODO(), filter).Decode(&result)
+	if result.ID == "" {
+		return result, fmt.Errorf("Not found user with id %s", _id)
+	}
 	return result, err
 }
 func ReadAssignee(_id string) (Assignee, error) {
@@ -71,6 +74,7 @@ func CreateCandidate(candidate Candidate) (Candidate, error) {
 	if candidate.Department != assignee.Department {
 		return candidate, fmt.Errorf("Candidate's  and his/her Assignee's department should be same.%s did not added because his department is: %s and assignee %s department is %s ", candidate.get_name(), candidate.Department, assignee.Name, assignee.Department)
 	}
+
 	insertResult, err := candidates_collection.InsertOne(context.TODO(), candidate)
 	if err != nil {
 		return candidate, err
@@ -79,11 +83,10 @@ func CreateCandidate(candidate Candidate) (Candidate, error) {
 	return candidate, err
 }
 func DeleteCandidate(_id string) error {
-	_, err := candidates_collection.DeleteOne(context.TODO(), bson.M{"_id": _id})
-	if err != nil {
-		return err
+	result, err := candidates_collection.DeleteOne(context.TODO(), bson.M{"_id": _id})
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("No record is found for id %s", _id)
 	}
-	fmt.Printf(" User with id %s is deleted", _id)
 	return err
 }
 func ArrangeMeeting(_id string, nextMeetingTime *time.Time) error {
