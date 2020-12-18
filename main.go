@@ -129,7 +129,7 @@ func CompleteMeeting(_id string) error {
 	filter := bson.D{{"_id", _id}}
 	var setElements bson.D
 	if candidate.is_next_meeting_null() {
-		return fmt.Errorf("There is no meeting to complete")
+		return fmt.Errorf("There is no meeting to complete for %s", candidate.get_name())
 	}
 	if candidate.is_max_number_of_meeting_reached() {
 		setElements = append(setElements, bson.E{"status", "Pending"})
@@ -141,7 +141,7 @@ func CompleteMeeting(_id string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Meeting %d is completed for candidate: %s", candidate.Meeting_count, candidate.get_name())
+	fmt.Printf("Meeting %d is completed for candidate: %s\n", candidate.Meeting_count, candidate.get_name())
 	return err
 }
 func DenyCandidate(_id string) error {
