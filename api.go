@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var loc *time.Location
+
 func get_id_from_query(w http.ResponseWriter, r *http.Request) (bool, string) {
 	keys, ok := r.URL.Query()["id"]
 
@@ -25,7 +27,10 @@ func get_id_from_query(w http.ResponseWriter, r *http.Request) (bool, string) {
 
 	return true, key
 }
-
+func init() {
+	fmt.Println("test")
+	loc, _ = time.LoadLocation("Europe/Istanbul")
+}
 func ApiCreateCandidate(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		err_mssg := "Error when parsing request for create candidate"
@@ -41,7 +46,8 @@ func ApiCreateCandidate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	candidate.Status = "Pending"
-	candidate.Application_date = time.Now()
+	candidate.Application_date = time.Now().In(loc).String()
+
 	candidate.ID = primitive.NewObjectID().Hex()
 	_, err := CreateCandidate(*candidate)
 	if err != nil {

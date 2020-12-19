@@ -36,7 +36,7 @@ type Candidate struct {
 	Meeting_count    int       //The order of the next meeting. The maximum meeting count is 4.
 	Next_meeting     time.Time //Timestamp of the next meeting between the Otsimo team and the candidate.
 	Assignee         string    `schema:"assignee"` //The id of the Otsimo team member who is responsible for this candidate.
-	Application_date time.Time //The application date of candidate
+	Application_date string    //The application date of candidate
 }
 
 func (candidate Candidate) is_next_meeting_null() bool {

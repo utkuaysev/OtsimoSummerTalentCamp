@@ -12,7 +12,7 @@ import (
 var client *mongo.Client
 var err error
 
-func init() {
+func init() { //provides connects once to mongo
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 	// Connect to MongoDB
 	client, err = mongo.Connect(context.TODO(), clientOptions)

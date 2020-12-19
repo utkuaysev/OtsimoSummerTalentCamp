@@ -71,6 +71,7 @@ func DeleteCandidate(_id string) error {
 	if result.DeletedCount == 0 {
 		return fmt.Errorf("No record is found for id %s", _id)
 	}
+	fmt.Printf("Candidate with id %s is deleted\n", _id)
 	return err
 }
 func ArrangeMeeting(_id string, nextMeetingTime *time.Time) error {
@@ -170,17 +171,13 @@ func FindAssigneeIDByName(name string) string {
 }
 func FindAssigneesCandidates(id string) ([]Candidate, error) {
 	var results []Candidate
-	// Passing bson.D{{}} as the filter matches all documents in the collection
 	cur, err := candidates_collection.Find(context.TODO(), bson.D{{"assignee", id}})
 	if err != nil {
 		return nil, err
 	}
 
-	// Finding multiple documents returns a cursor
-	// Iterating through the cursor allows us to decode documents one at a time
 	for cur.Next(context.TODO()) {
 
-		// create a value into which the single document can be decoded
 		var elem Candidate
 		err := cur.Decode(&elem)
 		if err != nil {
