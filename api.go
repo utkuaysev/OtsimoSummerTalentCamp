@@ -28,9 +28,14 @@ func get_id_from_query(w http.ResponseWriter, r *http.Request) (bool, string) {
 	return true, key
 }
 func init() {
-	fmt.Println("test")
 	loc, _ = time.LoadLocation("Europe/Istanbul")
 }
+
+/*`
+curl "http://localhost:8080/createCandidate?first_name=utku&last_name=aysev&
+mail=asd@gma.com&department=Development&assignee=5bb6368f55c98300013a087d&experience=true&university=TOBB"
+`
+*/
 func ApiCreateCandidate(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		err_mssg := "Error when parsing request for create candidate"
@@ -46,7 +51,7 @@ func ApiCreateCandidate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	candidate.Status = "Pending"
-	candidate.Application_date = time.Now().In(loc).String()
+	candidate.Application_date = time.Now().In(loc)
 
 	candidate.ID = primitive.NewObjectID().Hex()
 	_, err := CreateCandidate(*candidate)
@@ -57,6 +62,10 @@ func ApiCreateCandidate(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "%s is successfully added ", candidate.get_name())
 }
+
+/*
+curl "http://localhost:8080/readCandidate?id=5b758c6151d9590001def630"
+*/
 func ApiReadCandidate(w http.ResponseWriter, r *http.Request) {
 	check, id := get_id_from_query(w, r)
 	if !check {
@@ -70,6 +79,10 @@ func ApiReadCandidate(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "%v", candidate)
 }
+
+/*
+curl "http://localhost:8080/deleteCandidate?id=5fddcea1ad8dab6c97bff711""
+*/
 func ApiDeleteCandidate(w http.ResponseWriter, r *http.Request) {
 	check, id := get_id_from_query(w, r)
 	if !check {
@@ -83,6 +96,10 @@ func ApiDeleteCandidate(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "Candidate with id %s is deleted", id)
 }
+
+/*
+curl "http://localhost:8080/arrangeMeeting?next_meeting_time=2020-12-19T09:55:33.756+00:00&id=5fddcea1ad8dab6c97bff711"
+*/
 func ApiArrangeMeeting(w http.ResponseWriter, r *http.Request) {
 	check, id := get_id_from_query(w, r)
 	if !check {
@@ -114,6 +131,10 @@ func ApiArrangeMeeting(w http.ResponseWriter, r *http.Request) {
 	log.Println(err)
 	fmt.Fprintf(w, "Meeting arranged for id %s", id)
 }
+
+/*
+curl "http://localhost:8080/completeMeeting?id=5fddcea1ad8dab6c97bff711""
+*/
 func ApiCompleteMeeting(w http.ResponseWriter, r *http.Request) {
 	check, id := get_id_from_query(w, r)
 	if !check {
@@ -127,6 +148,10 @@ func ApiCompleteMeeting(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "Meeting is completed for id:%s", id)
 }
+
+/*
+curl "http://localhost:8080/denyCandidate?id=5fddcea1ad8dab6c97bff711""
+*/
 func ApiDenyCandidate(w http.ResponseWriter, r *http.Request) {
 	check, id := get_id_from_query(w, r)
 	if !check {
@@ -140,6 +165,10 @@ func ApiDenyCandidate(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "Candidate is denied with id:%s", id)
 }
+
+/*
+curl "http://localhost:8080/acceptCandidate?id=5fddcea1ad8dab6c97bff711""
+*/
 func ApiAcceptCandidate(w http.ResponseWriter, r *http.Request) {
 	check, id := get_id_from_query(w, r)
 	if !check {
@@ -153,29 +182,32 @@ func ApiAcceptCandidate(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "Candidate is accepted with id:%s", id)
 }
+
+/*
+`curl "http://localhost:8080/findAssigneeIDByName?name=Zafer""`
+*/
 func ApiFindAssigneeIDByName(w http.ResponseWriter, r *http.Request) {
 	names, ok := r.URL.Query()["name"]
-
 	if !ok || len(names[0]) < 1 {
 		log.Println("Url Param 'name' is missing")
 		fmt.Fprintf(w, "Url Param 'name' is missing")
 		return
 	}
-
-	// Query()["id"] will return an array of items,
+	// Query()["name"] will return an array of items,
 	// we only want the single item.
 	name := names[0]
-
 	id := FindAssigneeIDByName(name)
 	if id == "" {
-		log.Println("Assignee not found with name %s ", name)
+		log.Printf("Assignee not found with name %s\n ", name)
 		fmt.Fprintf(w, "Assignee not found with name %s ", name)
 		return
 	}
 	fmt.Fprintf(w, "Candidate id is %s for name:%s", id, name)
-
 }
 
+/*
+curl "http://localhost:8080/findAssigneesCandidates?id=5bb6368f55c98300013a087d""
+*/
 func ApiFindAssigneesCandidates(writer http.ResponseWriter, request *http.Request) {
 	check, id := get_id_from_query(writer, request)
 	if !check {
